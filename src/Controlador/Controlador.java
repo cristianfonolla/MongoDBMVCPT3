@@ -33,6 +33,19 @@ public class Controlador {
         control();
         //carregarLlistaDocuments();
         carregarDatabases();
+        inicialitzarLlistes();
+    }
+
+    public void inicialitzarLlistes() {
+
+        DefaultListModel m = new DefaultListModel();
+
+        m.addElement("Llista Buida!");
+
+        //vista.getjList1().setModel(m);
+        vista.getjList2().setModel(m);
+        //vistaDB.getjList1().setModel(m);
+
     }
 
     public void carregarDatabases() {
@@ -67,9 +80,9 @@ public class Controlador {
 
         DefaultListModel m = new DefaultListModel();
 
-        for (Object col : model.getDocuments(vista.getjList1().getSelectedValue(), vistaDB.getjList1().getSelectedValue())) {
+        for (Object doc : model.getDocuments(vista.getjList1().getSelectedValue(), vistaDB.getjList1().getSelectedValue())) {
 
-            m.addElement(col);
+            m.addElement(doc);
 
         }
 
