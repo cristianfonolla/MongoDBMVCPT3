@@ -8,12 +8,17 @@ package Controlador;
 import Model.Model;
 import Vista.Vista;
 import Vista.VistaDB;
-import com.mongodb.client.MongoDatabase;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
+import javax.swing.JComboBox;
+import org.bson.Document;
 
 /**
  *
@@ -33,18 +38,6 @@ public class Controlador {
         control();
         //carregarLlistaDocuments();
         carregarDatabases();
-        inicialitzarLlistes();
-    }
-
-    public void inicialitzarLlistes() {
-
-        DefaultListModel m = new DefaultListModel();
-
-        m.addElement("Llista Buida!");
-
-        //vista.getjList1().setModel(m);
-        vista.getjList2().setModel(m);
-        //vistaDB.getjList1().setModel(m);
 
     }
 
@@ -80,7 +73,7 @@ public class Controlador {
 
         DefaultListModel m = new DefaultListModel();
 
-        for (Object doc : model.getDocuments(vista.getjList1().getSelectedValue(), vistaDB.getjList1().getSelectedValue())) {
+        for (Document doc : model.getDocuments(vista.getjList1().getSelectedValue(), vistaDB.getjList1().getSelectedValue())) {
 
             m.addElement(doc);
 
@@ -115,7 +108,7 @@ public class Controlador {
                     System.out.println("Sortint... ADEU!");
                     System.exit(0);
                 }
-
+                //Carrega Coleccions DB
                 if (actionEvent.getSource().equals(vistaDB.getjButton1())) {
                     carregarColections();
                     vistaDB.setVisible(false);
@@ -123,6 +116,13 @@ public class Controlador {
                 }
 
                 if (actionEvent.getSource().equals(vista.getjButton1())) {
+
+                }
+                //Canviar de database
+                if (actionEvent.getSource().equals(vista.getjButton7())) {
+
+                    vista.setVisible(false);
+                    vistaDB.setVisible(true);
 
                 }
 
@@ -134,19 +134,25 @@ public class Controlador {
         vistaDB.getjButton2().addActionListener(actionListener);
         vistaDB.getjButton1().addActionListener(actionListener);
         vista.getjButton1().addActionListener(actionListener);
+        vista.getjButton7().addActionListener(actionListener);
 
         MouseAdapter mouseAdapter = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
 
-                if (e.getSource().equals(vistaDB.getjList1())) {
+                if (e.getSource().equals(vista.getjList2())) {
                     try {
-                        filasel = vistaDB.getjList1().getSelectedIndex();
+                        filasel = vista.getjList2().getSelectedIndex();
                         if (filasel != -1) {
 
-                            System.out.println(vistaDB.getjList1().getSelectedValue());
+                            Document myDoc = vista.getjList2().getSelectedValue();
+                            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                            String json = gson.toJson(myDoc);
 
+                            vista.getjTextArea1().setText(json);
+                            
+                            
                         }
                     } catch (NumberFormatException ex) {
                     }
@@ -158,6 +164,7 @@ public class Controlador {
                         filasel = vista.getjList1().getSelectedIndex();
                         if (filasel != -1) {
                             carregarDocuments();
+                            //carregaCombo((ArrayList) model.getDocuments(vista.getjList1().getSelectedValue(), vistaDB.getjList1().getSelectedValue()), vista.getjComboBox1());
                         }
                     } catch (NumberFormatException ex) {
                     }
@@ -166,9 +173,13 @@ public class Controlador {
             }
 
         };
-        vistaDB.getjList1().addMouseListener(mouseAdapter);
+        vista.getjList2().addMouseListener(mouseAdapter);
         vista.getjList1().addMouseListener(mouseAdapter);
 
+    }
+
+    public void carregaCombo(ArrayList resultSet, JComboBox combo) {
+        combo.setModel(new DefaultComboBoxModel((resultSet != null ? resultSet.toArray() : new Object[]{})));
     }
 
 }

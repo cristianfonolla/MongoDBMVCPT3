@@ -40,7 +40,7 @@ public class Model {
 
     }
 
-    public FindIterable getDocuments(String collection, String db) {
+    public FindIterable<Document> getDocuments(String collection, String db) {
 
         return mongoClient.getDatabase(db).getCollection(collection).find();
 
