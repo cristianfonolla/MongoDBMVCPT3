@@ -8,6 +8,7 @@ package Main;
 import Controlador.Controlador;
 import Model.Model;
 import Vista.Vista;
+import Vista.VistaDB;
 
 /**
  *
@@ -17,14 +18,15 @@ public class Main {
 
     private static Model model = new Model();
     private static Vista vista = new Vista();
+    private static VistaDB vistaDB = new VistaDB();
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        new Controlador(model, vista);
-        vista.setVisible(true);
-
+        new Controlador(model, vista, vistaDB);
+        vista.setVisible(false);
+        vistaDB.setVisible(true);
     }
 
 }

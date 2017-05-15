@@ -6,7 +6,11 @@
 package Model;
 
 import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoIterable;
+import org.bson.Document;
 
 /**
  *
@@ -16,19 +20,60 @@ public class Model {
 
     MongoClient mongoClient = new MongoClient();
 
-    MongoDatabase database = mongoClient.getDatabase("consultes");
+    MongoDatabase database;
+
+    MongoCollection<Document> col;
 
     public Model() {
 
-        llistarDBs();
     }
 
-    public void llistarDBs() {
+//    public FindIterable<Document> getAllDocuments(String colection) {
+//
+//        col = database.getCollection(colection);
+//
+//        return col.find();
+//    }
+    public MongoIterable getAllDatabases() {
 
-        for (String s : database.listCollectionNames()) {
-            System.out.println(s);            
-        }
+        return mongoClient.listDatabaseNames();
 
+    }
+
+    public FindIterable getDocuments(String collection, String db) {
+
+        return mongoClient.getDatabase(db).getCollection(collection).find();
+
+    }
+
+    public MongoIterable getCollections(String db) {
+
+        return mongoClient.getDatabase(db).listCollectionNames();
+
+    }
+
+    public MongoClient getMongoClient() {
+        return mongoClient;
+    }
+
+    public void setMongoClient(MongoClient mongoClient) {
+        this.mongoClient = mongoClient;
+    }
+
+    public MongoDatabase getDatabase() {
+        return database;
+    }
+
+    public void setDatabase(MongoDatabase database) {
+        this.database = database;
+    }
+
+    public MongoCollection<Document> getCol() {
+        return col;
+    }
+
+    public void setCol(MongoCollection<Document> col) {
+        this.col = col;
     }
 
 }
