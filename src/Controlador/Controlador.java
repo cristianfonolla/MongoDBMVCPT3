@@ -10,6 +10,8 @@ import Vista.Vista;
 import Vista.VistaDB;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mongodb.client.MongoCollection;
+import static com.mongodb.client.model.Filters.eq;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -19,6 +21,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 /**
  *
@@ -114,9 +117,48 @@ public class Controlador {
                     vistaDB.setVisible(false);
                     vista.setVisible(true);
                 }
+                //Actualitzar document
+                if (actionEvent.getSource().equals(vista.getjButton2())) {
 
+                    Document d = Document.parse(vista.getjTextArea1().getText());
+                    System.out.println(d);
+
+                    try {
+                        MongoCollection col = model.getDatabase().getCollection(vista.getjList1().getSelectedValue());
+                        //UpdateResult resultat = col.updateOne(eq("i", 10), set("i", 110));
+
+                    } catch (Exception e) {
+                    }
+
+                }
+                //Afegir documents sencers
                 if (actionEvent.getSource().equals(vista.getjButton1())) {
 
+                    MongoCollection col = model.getMongoClient().getDatabase(
+                            vistaDB.getjList1().getSelectedValue()
+                    ).getCollection(
+                            vista.getjList1().getSelectedValue()
+                    );
+
+                    Document d = Document.parse(vista.getjTextArea1().getText());
+
+                    col.insertOne(d);
+                    carregarDocuments();
+
+                }
+                //Borrar documents
+                if (actionEvent.getSource().equals(vista.getjButton3())) {
+
+                    MongoCollection col = model.getMongoClient().getDatabase(
+                            vistaDB.getjList1().getSelectedValue()
+                    ).getCollection(
+                            vista.getjList1().getSelectedValue()
+                    );
+
+                    Document doc = vista.getjList2().getSelectedValue();
+                    ObjectId id = (ObjectId) doc.get("_id");
+                    col.deleteOne(eq("_id", new ObjectId(id.toString())));
+                    carregarDocuments();
                 }
                 //Canviar de database
                 if (actionEvent.getSource().equals(vista.getjButton7())) {
@@ -135,6 +177,8 @@ public class Controlador {
         vistaDB.getjButton1().addActionListener(actionListener);
         vista.getjButton1().addActionListener(actionListener);
         vista.getjButton7().addActionListener(actionListener);
+        vista.getjButton2().addActionListener(actionListener);
+        vista.getjButton3().addActionListener(actionListener);
 
         MouseAdapter mouseAdapter = new MouseAdapter() {
             @Override
@@ -151,8 +195,7 @@ public class Controlador {
                             String json = gson.toJson(myDoc);
 
                             vista.getjTextArea1().setText(json);
-                            
-                            
+
                         }
                     } catch (NumberFormatException ex) {
                     }
@@ -173,8 +216,11 @@ public class Controlador {
             }
 
         };
-        vista.getjList2().addMouseListener(mouseAdapter);
-        vista.getjList1().addMouseListener(mouseAdapter);
+
+        vista.getjList2()
+                .addMouseListener(mouseAdapter);
+        vista.getjList1()
+                .addMouseListener(mouseAdapter);
 
     }
 

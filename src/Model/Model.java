@@ -75,5 +75,7 @@ public class Model {
     public void setCol(MongoCollection<Document> col) {
         this.col = col;
     }
+    
+    
 
 }
