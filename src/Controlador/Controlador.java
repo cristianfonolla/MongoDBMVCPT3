@@ -17,11 +17,16 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JComboBox;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import static com.mongodb.client.model.Updates.set;
+import com.mongodb.client.result.UpdateResult;
+import javax.swing.JOptionPane;
+import static com.mongodb.client.model.Updates.unset;
 
 /**
  *
@@ -33,6 +38,7 @@ public class Controlador {
     Vista vista;
     VistaDB vistaDB;
     Model model;
+    String value;
 
     public Controlador(Model model, Vista vista, VistaDB vistaDB) {
         this.vista = vista;
@@ -86,6 +92,30 @@ public class Controlador {
 
     }
 
+    public void carregarKeysCombo() {
+
+//        DefaultComboBoxModel m = new DefaultComboBoxModel();
+//
+        Document d = vista.getjList2().getSelectedValue();
+//
+//        Object[] llista = d.keySet().toArray();
+//
+//        System.out.println(d.keySet());
+//
+//        for (Object key : llista) {
+//            m.addElement(key);
+//        }
+//
+//        vista.getjComboBox2().setModel(m);
+
+        ComboBoxModel m = vista.getjComboBox2().getModel();
+
+        for (Object key : d.keySet().toArray()) {
+            vista.getjComboBox2().addItem(key.toString());
+        }
+
+    }
+
 //    private void carregarLlistaDocuments() {
 //
 //        DefaultListModel m = new DefaultListModel();
@@ -131,7 +161,7 @@ public class Controlador {
                     }
 
                 }
-                //Afegir documents sencers
+                //Inserir documents sencers
                 if (actionEvent.getSource().equals(vista.getjButton1())) {
 
                     MongoCollection col = model.getMongoClient().getDatabase(
@@ -156,6 +186,9 @@ public class Controlador {
                     );
 
                     Document doc = vista.getjList2().getSelectedValue();
+
+                    System.out.println(doc.get("_id.timestamp"));
+
                     ObjectId id = (ObjectId) doc.get("_id");
                     col.deleteOne(eq("_id", new ObjectId(id.toString())));
                     carregarDocuments();
@@ -165,6 +198,66 @@ public class Controlador {
 
                     vista.setVisible(false);
                     vistaDB.setVisible(true);
+                    carregarKeysCombo();
+
+                }
+
+                if (actionEvent.getSource().equals(vista.getjButton5())) {
+
+                    try {
+                        MongoCollection col = model.getMongoClient().getDatabase(
+                                vistaDB.getjList1().getSelectedValue()
+                        ).getCollection(
+                                vista.getjList1().getSelectedValue()
+                        );
+
+                        Document d = vista.getjList2().getSelectedValue();
+                        String key = vista.getjComboBox2().getSelectedItem().toString();
+                        String value = d.get(key).toString();
+                        String newKey = vista.getjTextField1().getText();
+
+                        UpdateResult resultat = col.updateOne(
+                                eq(key, value),
+                                unset(newKey)
+                        );
+
+                        carregarDocuments();
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(null, "Selecciona un document que modificar");
+                    }
+
+                }
+
+                if (actionEvent.getSource().equals(vista.getjButton4())) {
+                    try {
+                        MongoCollection col = model.getMongoClient().getDatabase(
+                                vistaDB.getjList1().getSelectedValue()
+                        ).getCollection(
+                                vista.getjList1().getSelectedValue()
+                        );
+
+                        Document d = vista.getjList2().getSelectedValue();
+                        String key = vista.getjComboBox2().getSelectedItem().toString();
+                        String value = d.get(key).toString();
+                        String newKey = vista.getjTextField1().getText();
+                        String newValue = vista.getjTextArea2().getText();
+
+                        if (vista.getjTextField1().getText().equals("")) {
+                            UpdateResult resultat = col.updateOne(
+                                    eq(key, value),
+                                    set(key, newValue)
+                            );
+                        } else if (!vista.getjTextField1().getText().equals("")) {
+                            UpdateResult resultat = col.updateOne(
+                                    eq(key, value),
+                                    set(newKey, newValue)
+                            );
+                        }
+
+                        carregarDocuments();
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(null, "Selecciona un document que modificar");
+                    }
 
                 }
 
@@ -179,6 +272,8 @@ public class Controlador {
         vista.getjButton7().addActionListener(actionListener);
         vista.getjButton2().addActionListener(actionListener);
         vista.getjButton3().addActionListener(actionListener);
+        vista.getjButton5().addActionListener(actionListener);
+        vista.getjButton4().addActionListener(actionListener);
 
         MouseAdapter mouseAdapter = new MouseAdapter() {
             @Override
@@ -190,11 +285,8 @@ public class Controlador {
                         filasel = vista.getjList2().getSelectedIndex();
                         if (filasel != -1) {
 
-                            Document myDoc = vista.getjList2().getSelectedValue();
-                            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                            String json = gson.toJson(myDoc);
-
-                            vista.getjTextArea1().setText(json);
+                            carregarDocumentsGson();
+                            carregarKeysCombo();
 
                         }
                     } catch (NumberFormatException ex) {
@@ -207,7 +299,7 @@ public class Controlador {
                         filasel = vista.getjList1().getSelectedIndex();
                         if (filasel != -1) {
                             carregarDocuments();
-                            //carregaCombo((ArrayList) model.getDocuments(vista.getjList1().getSelectedValue(), vistaDB.getjList1().getSelectedValue()), vista.getjComboBox1());
+
                         }
                     } catch (NumberFormatException ex) {
                     }
@@ -222,6 +314,14 @@ public class Controlador {
         vista.getjList1()
                 .addMouseListener(mouseAdapter);
 
+    }
+
+    public void carregarDocumentsGson() {
+        Document myDoc = vista.getjList2().getSelectedValue();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String json = gson.toJson(myDoc);
+
+        vista.getjTextArea1().setText(json);
     }
 
     public void carregaCombo(ArrayList resultSet, JComboBox combo) {
